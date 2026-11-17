@@ -1,0 +1,316 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Pro | Administração</title>
+    <link rel="stylesheet" href="css/style.css">
+
+    <style>
+        .campo-senha {
+            position: relative;
+        }
+
+        .campo-senha input {
+            width: 100%;
+            padding-right: 75px;
+        }
+
+        .btn-mostrar {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            color: #0878b9;
+            font-weight: bold;
+        }
+
+        .mensagem {
+            margin-top: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <div class="nav-brand">
+        <h1>🏥 Hospital Pro</h1>
+        <span>Painel administrativo</span>
+    </div>
+
+    <div class="nav-user">
+        <a href="index.html" class="btn-nav">Sair</a>
+    </div>
+</header>
+
+<main>
+
+    <section>
+        <h2>👤 Cadastro de usuários</h2>
+        <p class="sub">Cadastre os funcionários e defina o setor de acesso.</p>
+
+        <form id="form-usuario">
+
+            <label for="usuario">Nome de usuário</label>
+            <input
+                type="text"
+                id="usuario"
+                name="usuario"
+                placeholder="Digite o nome de usuário"
+                required
+                maxlength="50"
+                autocomplete="off"
+            >
+
+            <label for="senha">Senha de acesso</label>
+
+            <div class="campo-senha">
+                <input
+                    type="password"
+                    id="senha"
+                    name="senha"
+                    placeholder="Digite a senha de acesso"
+                    required
+                    minlength="1"
+                    autocomplete="new-password"
+                >
+
+                <button
+                    type="button"
+                    class="btn-mostrar"
+                    id="mostrar-senha"
+                >
+                    Mostrar
+                </button>
+            </div>
+
+            <label for="tipo">Setor</label>
+            <select id="tipo" name="tipo" required>
+                <option value="">Selecione o setor</option>
+                <option value="admin">Administração</option>
+                <option value="atendimento">Atendimento</option>
+                <option value="triagem">Triagem</option>
+                <option value="medico">Médico</option>
+                <option value="almoxarifado">Almoxarifado</option>
+            </select>
+
+            <div class="acoes">
+                <button
+                    type="submit"
+                    class="btn-sucesso"
+                    id="btn-cadastrar"
+                >
+                    Cadastrar usuário
+                </button>
+            </div>
+
+            <div
+                id="mensagem"
+                class="mensagem"
+                role="status"
+                aria-live="polite"
+            ></div>
+
+        </form>
+    </section>
+
+    <section>
+        <div class="card-header">
+            <div>
+                <h2>📋 Usuários cadastrados</h2>
+                <p>Visualize os usuários e seus respectivos setores.</p>
+            </div>
+
+            <button type="button" id="btn-atualizar" class="sec">
+                Atualizar lista
+            </button>
+        </div>
+
+        <div id="lista-mensagem" class="mensagem"></div>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Usuário</th>
+                        <th>Setor</th>
+                    </tr>
+                </thead>
+
+                <tbody id="usuarios-tbody">
+                    <tr>
+                        <td colspan="2">Carregando usuários...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+</main>
+
+<script src="js/api.js"></script>
+
+<script>
+Api.proteger("admin.html");
+
+const formUsuario = document.getElementById("form-usuario");
+const mensagem = document.getElementById("mensagem");
+const listaMensagem = document.getElementById("lista-mensagem");
+const usuariosTbody = document.getElementById("usuarios-tbody");
+const btnCadastrar = document.getElementById("btn-cadastrar");
+const btnAtualizar = document.getElementById("btn-atualizar");
+
+const campoSenha = document.getElementById("senha");
+const btnMostrarSenha = document.getElementById("mostrar-senha");
+
+const nomesSetores = {
+    admin: "Administração",
+    atendimento: "Atendimento",
+    triagem: "Triagem",
+    medico: "Médico",
+    almoxarifado: "Almoxarifado"
+};
+
+function mostrarMensagem(elemento, texto, tipo) {
+    elemento.textContent = texto;
+    elemento.className = "mensagem " + tipo;
+}
+
+// Mostrar ou ocultar senha
+btnMostrarSenha.addEventListener("click", function() {
+    if (campoSenha.type === "password") {
+        campoSenha.type = "text";
+        btnMostrarSenha.textContent = "Ocultar";
+    } else {
+        campoSenha.type = "password";
+        btnMostrarSenha.textContent = "Mostrar";
+    }
+});
+
+// Cadastrar usuário
+formUsuario.addEventListener("submit", async function(event) {
+    event.preventDefault();
+
+    const usuario = document.getElementById("usuario").value.trim();
+    const senha = campoSenha.value;
+    const tipo = document.getElementById("tipo").value;
+
+    if (!usuario || !senha.trim() || !tipo) {
+        mostrarMensagem(
+            mensagem,
+            "Preencha todos os campos.",
+            "mensagem-erro"
+        );
+        return;
+    }
+
+    btnCadastrar.disabled = true;
+    btnCadastrar.textContent = "Cadastrando...";
+
+    try {
+        const dados = await Api.requisicao("/usuarios", {
+            metodo: "POST",
+            dados: {
+                usuario,
+                senha,
+                tipo
+            }
+        });
+
+        mostrarMensagem(
+            mensagem,
+            dados.mensagem || "Usuário cadastrado com sucesso!",
+            "mensagem-sucesso"
+        );
+
+        formUsuario.reset();
+
+        campoSenha.type = "password";
+        btnMostrarSenha.textContent = "Mostrar";
+
+        await carregarUsuarios();
+
+    } catch (erro) {
+        mostrarMensagem(
+            mensagem,
+            erro.message || "Erro ao conectar com o servidor.",
+            "mensagem-erro"
+        );
+    } finally {
+        btnCadastrar.disabled = false;
+        btnCadastrar.textContent = "Cadastrar usuário";
+    }
+});
+
+// Carregar usuários
+async function carregarUsuarios() {
+    usuariosTbody.innerHTML = `
+        <tr>
+            <td colspan="2">Carregando usuários...</td>
+        </tr>
+    `;
+
+    try {
+        const usuarios = await Api.requisicao("/usuarios");
+
+        if (!Array.isArray(usuarios)) {
+            throw new Error("Resposta inválida do servidor.");
+        }
+
+        usuariosTbody.innerHTML = "";
+        listaMensagem.textContent = "";
+
+        if (usuarios.length === 0) {
+            usuariosTbody.innerHTML = `
+                <tr>
+                    <td colspan="2">Nenhum usuário cadastrado.</td>
+                </tr>
+            `;
+            return;
+        }
+
+        usuarios.forEach(usuario => {
+            const linha = document.createElement("tr");
+
+            const colunaUsuario = document.createElement("td");
+            colunaUsuario.textContent = usuario.usuario;
+
+            const colunaSetor = document.createElement("td");
+            colunaSetor.textContent =
+                nomesSetores[usuario.tipo] || usuario.tipo;
+
+            linha.appendChild(colunaUsuario);
+            linha.appendChild(colunaSetor);
+
+            usuariosTbody.appendChild(linha);
+        });
+
+    } catch (erro) {
+        usuariosTbody.innerHTML = `
+            <tr>
+                <td colspan="2">Erro ao carregar usuários.</td>
+            </tr>
+        `;
+
+        mostrarMensagem(
+            listaMensagem,
+            erro.message || "Verifique se o servidor está funcionando.",
+            "mensagem-erro"
+        );
+    }
+}
+
+// Atualizar lista
+btnAtualizar.addEventListener("click", carregarUsuarios);
+
+// Carregar ao abrir a página
+carregarUsuarios();
+</script>
+
+</body>
+</html>

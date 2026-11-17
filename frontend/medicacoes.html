@@ -1,0 +1,255 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Hospital Pro | Medicações</title>
+
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+    <!-- CABEÇALHO -->
+    <header class="navbar">
+
+        <div class="nav-brand">
+            <div class="logo-icon">🏥</div>
+
+            <div>
+                <h1>Hospital Pro</h1>
+                <span>Histórico de consultas e medicações</span>
+            </div>
+        </div>
+
+        <div class="nav-user">
+            <span class="user-pill">💊 Medicações</span>
+
+            <a class="btn-nav" href="medico.html">
+                Painel médico
+            </a>
+
+            <a class="btn-nav" href="index.html">
+                Sair
+            </a>
+        </div>
+
+    </header>
+
+    <!-- CONTEÚDO -->
+    <main class="container">
+
+        <section class="card">
+
+            <div class="card-header">
+                <div>
+                    <h2>💊 Medicações prescritas</h2>
+                    <p>Histórico de consultas registradas no sistema.</p>
+                </div>
+
+                <button
+                    type="button"
+                    id="btn-atualizar"
+                    class="btn-atualizar"
+                >
+                    🔄 Atualizar histórico
+                </button>
+            </div>
+
+            <p id="mensagem" class="mensagem" role="status"></p>
+
+            <div class="table-wrap">
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Paciente</th>
+                            <th>Diagnóstico</th>
+                            <th>Medicação</th>
+                            <th>Observações</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="consultas-tbody">
+                        <tr>
+                            <td colspan="5" class="texto-vazio">
+                                Carregando histórico...
+                            </td>
+                        </tr>
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- VOLTAR -->
+    <button
+        class="btn-voltar"
+        type="button"
+        onclick="voltarPagina()"
+    >
+        ⬅️ Voltar
+    </button>
+
+    <script src="js/api.js"></script>
+
+    <script>
+        Api.proteger("medicacoes.html");
+
+        let carregando = false;
+
+        // ==========================================
+        // CARREGAR HISTÓRICO DE CONSULTAS
+        // ==========================================
+
+        async function carregarConsultas() {
+
+            if (carregando) return;
+
+            carregando = true;
+
+            const tbody = document.getElementById("consultas-tbody");
+            const mensagem = document.getElementById("mensagem");
+            const botao = document.getElementById("btn-atualizar");
+
+            mensagem.textContent = "Carregando histórico...";
+            mensagem.className = "mensagem";
+
+            botao.disabled = true;
+
+            try {
+
+                const dados = await Api.requisicao("/medicacoes");
+
+                if (!Array.isArray(dados)) {
+                    throw new Error("O servidor retornou dados inválidos.");
+                }
+
+                tbody.replaceChildren();
+
+                if (dados.length === 0) {
+
+                    mensagem.textContent = "Nenhuma medicação prescrita ainda.";
+
+                    const tr = document.createElement("tr");
+                    const td = document.createElement("td");
+
+                    td.colSpan = 5;
+                    td.className = "texto-vazio";
+                    td.textContent = "Nenhuma consulta registrada.";
+
+                    tr.appendChild(td);
+                    tbody.appendChild(tr);
+
+                    return;
+                }
+
+                mensagem.textContent = "";
+
+                // Ordenar da consulta mais recente para a mais antiga.
+                const consultasOrdenadas = dados.slice().reverse();
+
+                consultasOrdenadas.forEach(consulta => {
+
+                    const tr = document.createElement("tr");
+
+                    // DATA
+                    let data = "-";
+
+                    if (consulta.createdAt) {
+
+                        const dataFormatada = new Date(consulta.createdAt);
+
+                        data = Number.isNaN(dataFormatada.getTime())
+                            ? "-"
+                            : dataFormatada.toLocaleString("pt-BR");
+                    }
+
+                    // INFORMAÇÕES
+                    const valores = [
+                        data,
+                        consulta.paciente || "-",
+                        consulta.diagnostico || "-",
+                        consulta.medicacao || "-",
+                        consulta.obs || "-"
+                    ];
+
+                    valores.forEach(valor => {
+
+                        const td = document.createElement("td");
+
+                        td.textContent = valor;
+
+                        tr.appendChild(td);
+
+                    });
+
+                    tbody.appendChild(tr);
+
+                });
+
+            } catch (erro) {
+
+                mensagem.textContent = erro.message;
+                mensagem.className = "mensagem mensagem-erro";
+
+                tbody.replaceChildren();
+
+                const tr = document.createElement("tr");
+                const td = document.createElement("td");
+
+                td.colSpan = 5;
+                td.className = "texto-vazio";
+                td.textContent = "Erro ao carregar as consultas.";
+
+                tr.appendChild(td);
+                tbody.appendChild(tr);
+
+            } finally {
+
+                carregando = false;
+                botao.disabled = false;
+
+            }
+        }
+
+        // ==========================================
+        // BOTÃO ATUALIZAR
+        // ==========================================
+
+        document.getElementById("btn-atualizar")
+            .addEventListener("click", carregarConsultas);
+
+        // ==========================================
+        // VOLTAR
+        // ==========================================
+
+        function voltarPagina() {
+
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                window.location.href = "index.html";
+            }
+
+        }
+
+        // ==========================================
+        // ATUALIZAÇÃO AUTOMÁTICA
+        // ==========================================
+
+        carregarConsultas();
+
+        setInterval(carregarConsultas, 10000);
+
+    </script>
+
+</body>
+</html>

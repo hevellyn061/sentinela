@@ -1,0 +1,332 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hospital Pro | TV de Chamadas</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #071b32, #104875);
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+
+    header {
+      background: #092845;
+      padding: 25px 15px;
+      text-align: center;
+      border-bottom: 4px solid #38bdf8;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: clamp(28px, 4vw, 46px);
+    }
+
+    header p {
+      margin: 10px 0 0;
+      color: #c8e9ff;
+      letter-spacing: 2px;
+    }
+
+    main {
+      width: min(1150px, 94%);
+      margin: 35px auto;
+    }
+
+    .chamada {
+      background: white;
+      color: #123b63;
+      padding: 38px 20px;
+      text-align: center;
+      border-radius: 20px;
+      box-shadow: 0 0 35px #38bdf833;
+    }
+
+    .etiqueta {
+      color: #087f5b;
+      font-weight: bold;
+      font-size: clamp(20px, 3vw, 28px);
+      text-transform: uppercase;
+    }
+
+    #nome-paciente {
+      font-size: clamp(34px, 7vw, 72px);
+      overflow-wrap: anywhere;
+      margin: 25px 0;
+    }
+
+    #sala {
+      display: inline-block;
+      padding: 15px 28px;
+      background: #087f5b;
+      color: white;
+      border-radius: 12px;
+      font-size: clamp(22px, 3vw, 34px);
+      font-weight: bold;
+    }
+
+    .colunas {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 22px;
+      margin-top: 25px;
+    }
+
+    .painel {
+      background: #ffffff10;
+      border: 1px solid #ffffff30;
+      border-radius: 14px;
+      padding: 22px;
+      min-width: 0;
+    }
+
+    .painel h2 {
+      margin-top: 0;
+      color: #7dd3fc;
+    }
+
+    .item {
+      padding: 14px 5px;
+      border-bottom: 1px solid #ffffff30;
+      font-size: 18px;
+      overflow-wrap: anywhere;
+    }
+
+    #status-tv {
+      text-align: center;
+      color: #c8e9ff;
+      margin: 25px 0;
+      font-size: 14px;
+    }
+
+    .erro {
+      color: #fecaca !important;
+    }
+
+    .btn-voltar {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      z-index: 9999;
+      padding: 11px 17px;
+      background: #0d47a1;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .btn-voltar:hover {
+      background: #1565c0;
+    }
+
+    @media (max-width: 650px) {
+      .colunas {
+        grid-template-columns: 1fr;
+      }
+
+      .chamada {
+        padding: 28px 15px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <button class="btn-voltar" type="button"
+        onclick="window.location.href='medico.html'">
+    ⬅️ Voltar para Médico
+</button>
+
+  <header>
+    <h1>🏥 HOSPITAL PRO</h1>
+    <p>PAINEL DE CHAMADAS DE PACIENTES</p>
+  </header>
+
+  <main>
+
+    <section class="chamada" aria-live="polite">
+      <div class="etiqueta">📢 Paciente chamado</div>
+
+      <h2 id="nome-paciente">
+        Aguardando próximo paciente...
+      </h2>
+
+      <div id="sala">SALA MÉDICA 1</div>
+    </section>
+
+    <div class="colunas">
+
+      <section class="painel">
+        <h2>📋 Fila de triagem</h2>
+        <div id="fila">Carregando fila...</div>
+      </section>
+
+      <section class="painel">
+        <h2>✅ Chamadas concluídas</h2>
+        <div id="historico">Carregando histórico...</div>
+      </section>
+
+    </div>
+
+    <p id="status-tv">Conectando ao servidor...</p>
+
+  </main>
+
+  <script src="js/api.js"></script>
+
+  <script>
+    // Tela pública da sala de espera: não exige login.
+    const API = "";
+
+    let ultimaChamadaId = null;
+    let consultando = false;
+
+    async function consultarChamada() {
+      const dados = await Api.requisicao(API + "/tv/chamada", {
+        autenticado: false
+      });
+
+      return dados;
+    }
+
+    function renderizarChamada(chamada) {
+      const nomeElemento = document.getElementById("nome-paciente");
+      const salaElemento = document.getElementById("sala");
+
+      if (!chamada) {
+        nomeElemento.textContent = "Aguardando próximo paciente...";
+        salaElemento.textContent = "SALA MÉDICA 1";
+        ultimaChamadaId = null;
+        document.title = "Hospital Pro | TV de Chamadas";
+        return;
+      }
+
+      const paciente = chamada.paciente;
+
+      const nome =
+        typeof paciente === "string"
+          ? paciente
+          : paciente?.nome ||
+            chamada.pacienteNome ||
+            chamada.nome ||
+            "Paciente";
+
+      nomeElemento.textContent = nome;
+
+      const tipoSala = chamada.localTipo || "SALA MÉDICA";
+      const numeroSala = chamada.localNumero;
+
+      salaElemento.textContent = numeroSala
+        ? `${tipoSala} ${numeroSala}`
+        : tipoSala;
+
+      if (chamada.id !== ultimaChamadaId) {
+        ultimaChamadaId = chamada.id;
+        document.title = "Chamando: " + nome;
+      }
+    }
+
+    function renderizarFila(fila) {
+      const elemento = document.getElementById("fila");
+      elemento.replaceChildren();
+
+      if (!Array.isArray(fila) || fila.length === 0) {
+        elemento.textContent = "Nenhum paciente aguardando na fila.";
+        return;
+      }
+
+      fila.forEach((paciente, indice) => {
+        const item = document.createElement("div");
+        item.className = "item";
+        item.textContent = `${indice + 1}. ${paciente.nome || "Paciente"}`;
+        elemento.appendChild(item);
+      });
+    }
+
+    function renderizarHistorico(historico) {
+      const elemento = document.getElementById("historico");
+      elemento.replaceChildren();
+
+      if (!Array.isArray(historico) || historico.length === 0) {
+        elemento.textContent = "Nenhuma chamada registrada.";
+        return;
+      }
+
+      const concluidas = historico.filter(
+        item => item.status === "atendida"
+      );
+
+      if (concluidas.length === 0) {
+        elemento.textContent = "Nenhuma chamada concluída ainda.";
+        return;
+      }
+
+      concluidas.forEach(item => {
+        const paciente = item.paciente;
+
+        const nome =
+          typeof paciente === "string"
+            ? paciente
+            : paciente?.nome ||
+              item.pacienteNome ||
+              item.nome ||
+              "Paciente";
+
+        const linha = document.createElement("div");
+        linha.className = "item";
+        linha.textContent = "✓ " + nome + " — atendimento concluído";
+        elemento.appendChild(linha);
+      });
+    }
+
+    async function atualizarTV() {
+      if (consultando) return;
+      consultando = true;
+
+      const status = document.getElementById("status-tv");
+
+      try {
+        const dados = await consultarChamada();
+
+        renderizarChamada(dados.chamada || null);
+        renderizarFila(dados.fila || []);
+        renderizarHistorico(dados.historico || []);
+
+        status.classList.remove("erro");
+        status.textContent =
+          "Sistema conectado • Última atualização: " +
+          new Date().toLocaleTimeString("pt-BR");
+
+      } catch (erro) {
+        status.classList.add("erro");
+        status.textContent =
+          "Falha ao conectar com o servidor. Confira se o backend está ligado.";
+
+        console.error("Erro ao atualizar a TV:", erro);
+
+      } finally {
+        consultando = false;
+      }
+    }
+
+    atualizarTV();
+    setInterval(atualizarTV, 3000);
+
+  </script>
+
+</body>
+</html>

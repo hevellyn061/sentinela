@@ -1,0 +1,381 @@
+/* ========================================
+   HOSPITAL PRO — ALMOXARIFADO
+   Complementa css/style.css (mesma paleta,
+   mesma tipografia, mesmos cartões).
+   ======================================== */
+
+body {
+  padding-bottom: 40px;
+}
+
+/* ========================================
+   CABEÇALHO
+   ======================================== */
+
+.navbar {
+  position: relative;
+}
+
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-width: 0;
+}
+
+.nav-brand .logo-icon {
+  display: grid;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  font-size: 22px;
+}
+
+.nav-brand h1 {
+  margin: 0;
+  color: var(--branco);
+  font-size: 21px;
+  line-height: 1.25;
+}
+
+.nav-brand span {
+  color: #d8e8f5;
+  font-size: 13px;
+}
+
+/* ========================================
+   CONTEÚDO
+   ======================================== */
+
+.container {
+  width: 100%;
+  max-width: 1100px;
+  margin: 30px auto;
+  padding: 0 18px;
+}
+
+/* ========================================
+   FORMULÁRIOS (mesmos campos das outras telas)
+   ======================================== */
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 7px;
+  color: var(--texto);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 12px 14px;
+  color: var(--texto);
+  background: var(--branco);
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 15px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: var(--azul-principal);
+  box-shadow: 0 0 0 3px rgba(8, 120, 185, 0.15);
+}
+
+.form-group input::placeholder {
+  color: #9db2c4;
+}
+
+.btn-full {
+  width: 100%;
+  margin-top: 6px;
+  padding: 13px 18px;
+  color: var(--branco);
+  background: var(--azul-principal);
+  border: none;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.btn-full:hover {
+  background: var(--azul-hover);
+  transform: translateY(-1px);
+}
+
+.btn-full:disabled {
+  background: #9db2c4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Botão de atualizar a lista */
+.btn-atualizar {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 16px;
+  color: var(--azul-principal);
+  background: var(--azul-claro);
+  border: 1px solid var(--borda);
+  border-radius: 9px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-atualizar:hover {
+  background: #d8ebf9;
+}
+
+.btn-atualizar:disabled {
+  color: var(--texto-suave);
+  cursor: progress;
+}
+
+/* Campo de pesquisa */
+.form-group.pesquisa {
+  margin-bottom: 16px;
+}
+
+.form-group.pesquisa input {
+  background: #f7fafd;
+}
+
+/* ========================================
+   HISTÓRICO DE ENTRADAS
+   ======================================== */
+
+.card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.historico-item {
+  padding: 13px 15px;
+  background: #f7fafd;
+  border: 1px solid var(--borda);
+  border-left: 4px solid var(--azul-principal);
+  border-radius: 10px;
+}
+
+.historico-item strong {
+  display: block;
+  color: var(--azul-escuro);
+  font-size: 15px;
+}
+
+.historico-item p {
+  margin: 4px 0;
+  color: var(--texto-suave);
+  font-size: 13px;
+}
+
+.historico-item small {
+  display: block;
+  color: #8ba3b6;
+  font-size: 12px;
+}
+
+/* ========================================
+   ESTADO VAZIO
+   ======================================== */
+
+.empty-state {
+  padding: 26px 18px;
+  text-align: center;
+  color: var(--texto-suave);
+  background: #f7fafd;
+  border: 1px dashed var(--borda);
+  border-radius: 12px;
+}
+
+.empty-state .empty-icon {
+  margin-bottom: 6px;
+  font-size: 30px;
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: 14px;
+}
+
+/* ========================================
+   TABELA DE ESTOQUE
+   ======================================== */
+
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--borda);
+  border-radius: 12px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+thead {
+  background: var(--azul-claro);
+}
+
+th {
+  padding: 12px 14px;
+  color: var(--azul-escuro);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+td {
+  padding: 12px 14px;
+  border-top: 1px solid var(--borda);
+  vertical-align: middle;
+}
+
+tbody tr:hover {
+  background: #f7fafd;
+}
+
+.texto-vazio {
+  padding: 22px 14px;
+  color: var(--texto-suave);
+  text-align: center;
+}
+
+/* Etiquetas de situação */
+.status {
+  display: inline-block;
+  padding: 5px 11px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.status-normal {
+  color: #155724;
+  background: #d4edda;
+  border-left: 4px solid var(--verde);
+}
+
+.status-baixo {
+  color: #664d03;
+  background: #fff3cd;
+  border-left: 4px solid var(--amarelo);
+}
+
+.status-zerado {
+  color: #842029;
+  background: #f8d7da;
+  border-left: 4px solid var(--vermelho);
+}
+
+/* ========================================
+   GRADE PRINCIPAL (duas colunas no desktop)
+   ======================================== */
+
+/* style.css não define as colunas da grade; aqui a entrada de
+   medicamentos fica à esquerda e o histórico à direita. */
+body.pagina-almoxarifado .main-grid {
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+}
+
+/* ========================================
+   RESPONSIVIDADE
+   ======================================== */
+
+@media (max-width: 900px) {
+  body.pagina-almoxarifado .main-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .container {
+    margin: 22px auto;
+    padding: 0 12px;
+  }
+
+  .navbar {
+    padding: 14px 12px;
+  }
+
+  .nav-brand h1 {
+    font-size: 17px;
+  }
+
+  .nav-brand span {
+    font-size: 12px;
+  }
+
+  section,
+  .card {
+    padding: 18px;
+  }
+
+  .stats-bar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 400px) {
+  .stats-bar {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ========================================
+   BOTÃO VOLTAR (dentro do cabeçalho)
+   ======================================== */
+
+header .btn-voltar {
+  position: static;
+  padding: 9px 15px;
+  color: var(--branco);
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+  box-shadow: none;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+
+header .btn-voltar:hover {
+  color: var(--branco);
+  background: rgba(255, 255, 255, 0.26);
+  transform: none;
+}
+
+@media (max-width: 640px) {
+  header .btn-voltar {
+    padding: 7px 12px;
+    font-size: 12px;
+  }
+}

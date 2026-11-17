@@ -1,0 +1,486 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Pro | Atendimento</title>
+
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/almoxarifado.css">
+</head>
+
+<body>
+
+<header class="navbar">
+    <div class="nav-brand">
+        <div class="logo-icon">🏥</div>
+        <div>
+            <h1>Hospital Pro - Atendimento</h1>
+            <span>Cadastro de pacientes e encaminhamento para a triagem</span>
+        </div>
+    </div>
+
+    <div class="nav-user">
+        <span class="user-pill" data-usuario-logado>Atendimento</span>
+        <a href="atendimentos.html" class="btn-nav">Atendimentos concluídos</a>
+        <a href="index.html" class="btn-nav">Sair</a>
+    </div>
+</header>
+
+<main class="container">
+
+    <!-- MENSAGEM GERAL -->
+    <div class="alerta-estoque" id="alertaTextoArea" style="display:none;">
+        <strong>⚠ Atenção!</strong>
+        <span id="alertaTexto"></span>
+    </div>
+
+    <section class="main-grid">
+
+        <!-- CADASTRO DO PACIENTE -->
+        <div class="card">
+
+            <div class="card-header">
+                <h2>🧾 Novo paciente</h2>
+                <p>Preencha os dados de quem chegou à recepção.</p>
+            </div>
+
+            <form id="formAtendimento">
+
+                <div class="form-group">
+                    <label for="nome">Nome completo</label>
+                    <input
+                        type="text"
+                        id="nome"
+                        placeholder="Ex: Maria da Silva"
+                        maxlength="120"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="cpf">CPF</label>
+                    <input
+                        type="text"
+                        id="cpf"
+                        inputmode="numeric"
+                        placeholder="000.000.000-00"
+                        maxlength="14"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="tipo">Tipo de atendimento</label>
+                    <select id="tipo" required>
+                        <option value="Particular">Particular</option>
+                        <option value="Convenio">Convênio</option>
+                    </select>
+                </div>
+
+                <button class="btn-full" type="submit" id="btnCadastrar">
+                    Cadastrar e enviar para triagem
+                </button>
+
+            </form>
+
+            <p id="mensagem" class="mensagem"></p>
+
+        </div>
+
+    </section>
+
+    <!-- LISTA DE PACIENTES -->
+    <section class="card estoque-card">
+
+        <div class="card-header">
+            <div>
+                <h2>📋 Pacientes cadastrados</h2>
+                <p>Acompanhe a situação de cada paciente no fluxo.</p>
+            </div>
+
+            <button
+                type="button"
+                class="btn-atualizar"
+                id="btnAtualizar"
+            >
+                🔄 Atualizar
+            </button>
+        </div>
+
+        <div class="filtros" id="filtros">
+            <button type="button" data-filtro="ativos" class="ativo">
+                No hospital
+            </button>
+            <button type="button" data-filtro="internado">Internados</button>
+            <button type="button" data-filtro="alta">Alta</button>
+            <button type="button" data-filtro="encerrados">Encerrados</button>
+            <button type="button" data-filtro="todos">Todos</button>
+        </div>
+
+        <div class="form-group pesquisa">
+            <input
+                type="search"
+                id="pesquisa"
+                placeholder="Pesquisar paciente..."
+                oninput="renderizarPacientes()"
+            >
+        </div>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Paciente</th>
+                        <th>Tipo</th>
+                        <th>Situação</th>
+                        <th>Cadastro</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+
+                <tbody id="pacientesTabela"></tbody>
+            </table>
+        </div>
+
+        <p id="mensagemLista" class="mensagem"></p>
+
+    </section>
+
+</main>
+
+<button class="btn-voltar" type="button" onclick="voltarPagina()">
+    ⬅️ Voltar
+</button>
+
+<script src="js/api.js"></script>
+
+<script>
+    Api.proteger("atendimento.html");
+
+    const form = document.getElementById("formAtendimento");
+    const mensagem = document.getElementById("mensagem");
+    const mensagemLista = document.getElementById("mensagemLista");
+    const botaoCadastrar = document.getElementById("btnCadastrar");
+    const botaoAtualizar = document.getElementById("btnAtualizar");
+    const tbody = document.getElementById("pacientesTabela");
+    const campoPesquisa = document.getElementById("pesquisa");
+
+    let pacientes = [];
+    let filtroAtual = "ativos";
+
+    // Situações vindas da camada comum (js/api.js)
+    const situacoes = Api.SITUACOES;
+
+    // ==================================================
+    // MENSAGENS
+    // ==================================================
+
+    function mostrarMensagem(elemento, texto, tipo = "sucesso") {
+        elemento.textContent = texto;
+        elemento.className = `mensagem mensagem-${tipo}`;
+    }
+
+    // ==================================================
+    // CPF
+    // ==================================================
+
+    function formatarCpf(valor) {
+        return valor
+            .replace(/\D/g, "")
+            .slice(0, 11)
+            .replace(/^(\d{3})(\d)/, "$1.$2")
+            .replace(/^(\d{3})\.(\d{3})(\d)/, "$1.$2.$3")
+            .replace(/^(\d{3})\.(\d{3})\.(\d{3})(\d)/, "$1.$2.$3-$4");
+    }
+
+    document.getElementById("cpf").addEventListener("input", function () {
+        this.value = formatarCpf(this.value);
+    });
+
+    // ==================================================
+    // CADASTRO
+    // ==================================================
+
+    form.addEventListener("submit", async function (event) {
+        event.preventDefault();
+
+        if (botaoCadastrar.disabled) {
+            return;
+        }
+
+        const nome = document.getElementById("nome").value.trim();
+        const cpf = document.getElementById("cpf").value;
+        const tipo = document.getElementById("tipo").value;
+
+        if (!nome || cpf.replace(/\D/g, "").length !== 11) {
+            mostrarMensagem(
+                mensagem,
+                "Informe o nome e um CPF com 11 dígitos.",
+                "erro"
+            );
+            return;
+        }
+
+        botaoCadastrar.disabled = true;
+        botaoCadastrar.textContent = "Cadastrando...";
+        mostrarMensagem(mensagem, "");
+
+        try {
+            const resultado = await Api.requisicao("/atendimento", {
+                metodo: "POST",
+                dados: { nome, cpf, tipo }
+            });
+
+            mostrarMensagem(
+                mensagem,
+                `${resultado.paciente.nome} foi cadastrado(a) e encaminhado(a) para a triagem.`,
+                "sucesso"
+            );
+
+            form.reset();
+            await carregarPacientes();
+            renderizarPacientes();
+
+        } catch (erro) {
+            mostrarMensagem(mensagem, erro.message, "erro");
+
+        } finally {
+            botaoCadastrar.disabled = false;
+            botaoCadastrar.textContent = "Cadastrar e enviar para triagem";
+        }
+    });
+
+    // ==================================================
+    // LISTAGEM
+    // ==================================================
+
+    async function carregarPacientes() {
+        const dados = await Api.requisicao("/pacientes");
+
+        if (!Array.isArray(dados)) {
+            throw new Error("Resposta inválida do servidor.");
+        }
+
+        pacientes = dados;
+    }
+
+    // Paciente combina com o filtro escolhido?
+    function combinaFiltro(paciente) {
+        if (filtroAtual === "todos") return true;
+        if (filtroAtual === "ativos") return !Api.encerrado(paciente.status);
+        if (filtroAtual === "encerrados") return Api.encerrado(paciente.status);
+        return paciente.status === filtroAtual;
+    }
+
+    function renderizarPacientes() {
+        const termo = campoPesquisa.value.trim().toLowerCase();
+
+        tbody.replaceChildren();
+
+        const filtrados = pacientes
+            .filter(combinaFiltro)
+            .filter(paciente =>
+                String(paciente.nome || "").toLowerCase().includes(termo)
+            )
+            .sort((a, b) =>
+                String(b.statusEm || b.createdAt).localeCompare(
+                    String(a.statusEm || a.createdAt)
+                )
+            );
+
+        if (!filtrados.length) {
+            const tr = document.createElement("tr");
+            const td = document.createElement("td");
+
+            td.colSpan = 5;
+            td.className = "texto-vazio";
+            td.textContent = pacientes.length
+                ? "Nenhum paciente nesta situação."
+                : "Nenhum paciente cadastrado ainda.";
+
+            tr.appendChild(td);
+            tbody.appendChild(tr);
+
+            return;
+        }
+
+        for (const paciente of filtrados) {
+            const tr = document.createElement("tr");
+
+            if (Api.encerrado(paciente.status)) {
+                tr.className = "linha-encerrada";
+            }
+
+            const nome = document.createElement("td");
+            nome.textContent = paciente.nome;
+
+            const tipo = document.createElement("td");
+            tipo.textContent =
+                paciente.tipo === "Convenio" ? "Convênio" : "Particular";
+
+            const situacao = document.createElement("td");
+            const etiqueta = document.createElement("span");
+
+            etiqueta.className = Api.classeSituacao(paciente.status);
+            etiqueta.textContent = Api.situacao(paciente.status);
+
+            situacao.appendChild(etiqueta);
+
+            const data = document.createElement("td");
+            data.textContent = Api.dataHora(
+                paciente.statusEm || paciente.createdAt
+            );
+
+            const acoes = document.createElement("td");
+            acoes.className = "acoes-tabela";
+
+            if (!Api.encerrado(paciente.status)) {
+                const alta = document.createElement("button");
+
+                alta.type = "button";
+                alta.className = "btn-mini alta";
+                alta.textContent = "✅ Alta";
+
+                alta.addEventListener("click", () =>
+                    darAlta(paciente, alta)
+                );
+
+                acoes.appendChild(alta);
+            } else {
+                const excluir = document.createElement("button");
+
+                excluir.type = "button";
+                excluir.className = "btn-mini perigo";
+                excluir.textContent = "🗑️ Excluir cadastro";
+
+                excluir.addEventListener("click", () =>
+                    excluirCadastro(paciente, excluir)
+                );
+
+                acoes.appendChild(excluir);
+            }
+
+            tr.append(nome, tipo, situacao, data, acoes);
+            tbody.appendChild(tr);
+        }
+    }
+
+    // ==================================================
+    // ALTA E EXCLUSÃO
+    // ==================================================
+
+    async function darAlta(paciente, botao) {
+        if (!confirm(
+            "Registrar alta para " + paciente.nome + "?\n" +
+            "Ele sai da lista de pacientes no hospital e vai para " +
+            "Atendimentos concluídos."
+        )) {
+            return;
+        }
+
+        botao.disabled = true;
+
+        try {
+            const resultado = await Api.requisicao("/pacientes/alta", {
+                metodo: "POST",
+                dados: {
+                    pacienteId: paciente.id,
+                    observacao: "Alta registrada pela recepção"
+                }
+            });
+
+            mostrarMensagem(
+                mensagemLista,
+                resultado.mensagem || "Alta registrada.",
+                "sucesso"
+            );
+
+            await atualizar();
+
+        } catch (erro) {
+            mostrarMensagem(mensagemLista, erro.message, "erro");
+            botao.disabled = false;
+        }
+    }
+
+    async function excluirCadastro(paciente, botao) {
+        if (!confirm(
+            "Excluir o cadastro de " + paciente.nome + "?\n" +
+            "O histórico do atendimento continua guardado."
+        )) {
+            return;
+        }
+
+        botao.disabled = true;
+
+        try {
+            const resultado = await Api.requisicao("/pacientes/excluir", {
+                metodo: "POST",
+                dados: { pacienteId: paciente.id }
+            });
+
+            mostrarMensagem(
+                mensagemLista,
+                resultado.mensagem || "Cadastro removido.",
+                "sucesso"
+            );
+
+            await atualizar();
+
+        } catch (erro) {
+            mostrarMensagem(mensagemLista, erro.message, "erro");
+            botao.disabled = false;
+        }
+    }
+
+    // ==================================================
+    // FILTROS
+    // ==================================================
+
+    document.getElementById("filtros").addEventListener("click", event => {
+        const botao = event.target.closest("button[data-filtro]");
+
+        if (!botao) return;
+
+        filtroAtual = botao.dataset.filtro;
+
+        document.querySelectorAll("#filtros button").forEach(item => {
+            item.classList.toggle("ativo", item === botao);
+        });
+
+        renderizarPacientes();
+    });
+
+    async function atualizar() {
+        botaoAtualizar.disabled = true;
+        mostrarMensagem(mensagemLista, "Carregando pacientes...");
+
+        try {
+            await carregarPacientes();
+            renderizarPacientes();
+
+        } catch (erro) {
+            mostrarMensagem(mensagemLista, erro.message, "erro");
+
+        } finally {
+            botaoAtualizar.disabled = false;
+        }
+    }
+
+    botaoAtualizar.addEventListener("click", atualizar);
+
+    // ==================================================
+    // VOLTAR E INICIAR
+    // ==================================================
+
+    function voltarPagina() {
+        window.location.href = "index.html";
+    }
+
+    atualizar();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Hospital Pro | Atendimentos concluídos</title>
+
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body class="pagina-atendimentos">
+
+    <!-- CABEÇALHO -->
+    <header class="navbar">
+
+        <div class="nav-brand">
+            <div class="logo-icon">🏥</div>
+
+            <div>
+                <h1>Hospital Pro</h1>
+                <span>Atendimentos concluídos</span>
+            </div>
+        </div>
+
+        <div class="nav-user">
+            <span class="user-pill" data-usuario-logado>Usuário</span>
+
+            <a class="btn-nav" href="medicacoes.html">Consultas</a>
+
+            <button type="button" class="btn-nav" onclick="Api.sair()">
+                Sair
+            </button>
+        </div>
+
+    </header>
+
+    <main class="container">
+
+        <!-- RESUMO -->
+        <section class="stats-bar">
+
+            <div class="stat-card">
+                <div class="stat-icon purple">📋</div>
+                <div>
+                    <div class="stat-value" id="statTotal">0</div>
+                    <div class="stat-label">Atendimentos no histórico</div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon green">✅</div>
+                <div>
+                    <div class="stat-value" id="statAlta">0</div>
+                    <div class="stat-label">Altas</div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon blue">🛏️</div>
+                <div>
+                    <div class="stat-value" id="statInternado">0</div>
+                    <div class="stat-label">Internados agora</div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon red">×</div>
+                <div>
+                    <div class="stat-value" id="statObito">0</div>
+                    <div class="stat-label">Óbitos</div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- HISTÓRICO -->
+        <section class="card">
+
+            <div class="card-header">
+                <div>
+                    <h2>📋 Histórico de atendimentos</h2>
+                    <p>
+                        Pacientes que já saíram do fluxo: alta, internação,
+                        transferência, evasão ou óbito.
+                    </p>
+                </div>
+
+                <button type="button" class="btn-atualizar" id="btnAtualizar">
+                    🔄 Atualizar
+                </button>
+            </div>
+
+            <div class="filtros" id="filtros">
+                <button type="button" data-desfecho="" class="ativo">
+                    Todos
+                </button>
+                <button type="button" data-desfecho="alta">Alta</button>
+                <button type="button" data-desfecho="internado">
+                    Internação
+                </button>
+                <button type="button" data-desfecho="transferido">
+                    Transferência
+                </button>
+                <button type="button" data-desfecho="evasao">Evasão</button>
+                <button type="button" data-desfecho="obito">Óbito</button>
+            </div>
+
+            <div class="form-group pesquisa">
+                <input type="search" id="pesquisa"
+                    placeholder="Pesquisar por nome ou CPF...">
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Paciente</th>
+                            <th>Entrada</th>
+                            <th>Saída</th>
+                            <th>Desfecho</th>
+                            <th>Diagnóstico</th>
+                            <th>Responsável</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="tabelaAtendimentos"></tbody>
+                </table>
+            </div>
+
+            <p id="mensagem" class="mensagem" role="status"></p>
+
+        </section>
+
+    </main>
+
+    <script src="js/api.js"></script>
+
+    <script>
+        Api.proteger("atendimentos.html");
+
+        const tbody = document.getElementById("tabelaAtendimentos");
+        const mensagem = document.getElementById("mensagem");
+        const campoPesquisa = document.getElementById("pesquisa");
+        const botaoAtualizar = document.getElementById("btnAtualizar");
+
+        let atendimentos = [];
+        let desfechoAtual = "";
+
+        const rotulos = {
+            alta: "Alta",
+            internado: "Internação",
+            transferido: "Transferência",
+            evasao: "Evasão",
+            obito: "Óbito"
+        };
+
+        function mostrarMensagem(texto, tipo = "") {
+            mensagem.textContent = texto;
+            mensagem.className = "mensagem " + tipo;
+        }
+
+        // ==================================================
+        // CARREGAR
+        // ==================================================
+
+        async function carregar() {
+            const rota = desfechoAtual
+                ? "/atendimentos?desfecho=" + encodeURIComponent(desfechoAtual)
+                : "/atendimentos";
+
+            const dados = await Api.requisicao(rota);
+
+            atendimentos = Array.isArray(dados) ? dados : [];
+
+            const internados = await Api.requisicao(
+                "/pacientes?situacao=internado"
+            );
+
+            atualizarIndicadores(Array.isArray(internados) ? internados : []);
+            renderizar();
+        }
+
+        function atualizarIndicadores(internados) {
+            document.getElementById("statTotal").textContent =
+                atendimentos.length;
+
+            document.getElementById("statAlta").textContent =
+                atendimentos.filter(a => a.desfecho === "alta").length;
+
+            document.getElementById("statObito").textContent =
+                atendimentos.filter(a => a.desfecho === "obito").length;
+
+            document.getElementById("statInternado").textContent =
+                internados.length;
+        }
+
+        // ==================================================
+        // TABELA
+        // ==================================================
+
+        function renderizar() {
+            const termo = campoPesquisa.value.trim().toLowerCase();
+
+            tbody.replaceChildren();
+
+            const filtrados = atendimentos.filter(item => {
+                if (!termo) return true;
+
+                return (
+                    String(item.nome || "").toLowerCase().includes(termo) ||
+                    String(item.cpf || "").includes(termo)
+                );
+            });
+
+            if (!filtrados.length) {
+                const tr = document.createElement("tr");
+                const td = document.createElement("td");
+
+                td.colSpan = 6;
+                td.className = "texto-vazio";
+                td.textContent = atendimentos.length
+                    ? "Nenhum atendimento encontrado."
+                    : "Nenhum atendimento concluído ainda.";
+
+                tr.appendChild(td);
+                tbody.appendChild(tr);
+
+                return;
+            }
+
+            filtrados.forEach(item => {
+                const tr = document.createElement("tr");
+
+                const nome = document.createElement("td");
+                nome.textContent = item.nome || "Paciente";
+
+                const entrada = document.createElement("td");
+                entrada.textContent = Api.dataHora(item.entradaEm);
+
+                const saida = document.createElement("td");
+                saida.textContent = Api.dataHora(item.saidaEm);
+
+                const desfecho = document.createElement("td");
+                const etiqueta = document.createElement("span");
+
+                etiqueta.className = Api.classeSituacao(item.desfecho);
+                etiqueta.textContent =
+                    rotulos[item.desfecho] || item.desfecho || "—";
+
+                desfecho.appendChild(etiqueta);
+
+                const diagnostico = document.createElement("td");
+                diagnostico.textContent =
+                    item.diagnostico || item.resumo || "—";
+
+                const responsavel = document.createElement("td");
+                responsavel.textContent =
+                    item.registradoPor || item.medico || "—";
+
+                tr.append(
+                    nome,
+                    entrada,
+                    saida,
+                    desfecho,
+                    diagnostico,
+                    responsavel
+                );
+
+                tbody.appendChild(tr);
+            });
+        }
+
+        // ==================================================
+        // FILTROS E PESQUISA
+        // ==================================================
+
+        document.getElementById("filtros").addEventListener("click", async event => {
+            const botao = event.target.closest("button[data-desfecho]");
+
+            if (!botao) return;
+
+            desfechoAtual = botao.dataset.desfecho;
+
+            document.querySelectorAll("#filtros button").forEach(item => {
+                item.classList.toggle("ativo", item === botao);
+            });
+
+            await atualizar();
+        });
+
+        campoPesquisa.addEventListener("input", renderizar);
+
+        botaoAtualizar.addEventListener("click", atualizar);
+
+        // ==================================================
+        // ATUALIZAR
+        // ==================================================
+
+        async function atualizar() {
+            botaoAtualizar.disabled = true;
+            mostrarMensagem("Carregando atendimentos...");
+
+            try {
+                await carregar();
+                mostrarMensagem("");
+            } catch (erro) {
+                mostrarMensagem(erro.message, "erro");
+            } finally {
+                botaoAtualizar.disabled = false;
+            }
+        }
+
+        atualizar();
+    </script>
+
+</body>
+</html>

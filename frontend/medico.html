@@ -1,0 +1,807 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Hospital Pro | Painel Médico</title>
+
+    <link rel="stylesheet" href="css/style.css">
+
+    <style>
+        .paciente {
+            padding: 16px;
+            border: 1px solid #d4e1eb;
+            border-left: 5px solid #0878b9;
+            border-radius: 10px;
+            margin: 12px 0;
+            background: white;
+        }
+
+        .paciente h3 {
+            margin-top: 0;
+        }
+
+        .paciente p {
+            overflow-wrap: anywhere;
+        }
+
+        .msg {
+            margin-top: 15px;
+            font-weight: bold;
+            overflow-wrap: anywhere;
+        }
+
+        .msg-erro {
+            color: #c62828;
+        }
+
+        .msg-sucesso {
+            color: #16803c;
+        }
+
+        .acoes-paciente {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .internado {
+            border-left-color: #0b7a4b;
+        }
+
+        .aviso-lista {
+            color: #52677c;
+            font-size: 14px;
+        }
+
+        @media (max-width: 600px) {
+            .acoes-paciente a,
+            .acoes-paciente button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- CABEÇALHO -->
+    <header class="navbar">
+
+        <div class="nav-brand">
+            <div class="logo-icon">🏥</div>
+
+            <div>
+                <h1>Hospital Pro</h1>
+                <span>Painel Médico</span>
+            </div>
+        </div>
+
+        <div class="nav-user">
+            <span class="user-pill">🩺 Médico</span>
+
+            <a class="btn-nav" href="medicacoes.html">
+                Ver consultas
+            </a>
+
+            <a class="btn-nav" href="atendimentos.html">
+                Atendimentos concluídos
+            </a>
+
+            <a class="btn-nav" href="index.html">
+                Sair
+            </a>
+        </div>
+
+    </header>
+
+    <main class="container">
+
+        <!-- FILA DE PACIENTES -->
+        <section class="card">
+
+            <div class="card-header">
+                <div>
+                    <h2>Pacientes aguardando atendimento</h2>
+                    <p>Pacientes encaminhados pela triagem.</p>
+                </div>
+
+                <button
+                    type="button"
+                    id="btn-atualizar"
+                    class="btn-atualizar"
+                >
+                    🔄 Atualizar lista
+                </button>
+            </div>
+
+            <p id="lista-mensagem" class="mensagem" role="status"></p>
+
+            <div id="lista-pacientes"></div>
+
+        </section>
+
+        <!-- REGISTRAR CONSULTA -->
+        <section class="card">
+
+            <div class="card-header">
+                <div>
+                    <h2>🩺 Registrar consulta</h2>
+                    <p>Preencha os dados do atendimento médico.</p>
+                </div>
+            </div>
+
+            <form id="form-consulta">
+
+                <div class="form-group">
+                    <label for="triagemId">Paciente chamado</label>
+
+                    <select id="triagemId" required>
+                        <option value="">
+                            Selecione um paciente na lista
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="diagnostico">Diagnóstico</label>
+
+                    <textarea
+                        id="diagnostico"
+                        placeholder="Informe o diagnóstico..."
+                        required
+                        maxlength="2000"
+                    ></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="medicacao">Medicação prescrita</label>
+
+                    <select id="medicacao" required>
+                        <option value="">
+                            Carregando medicações...
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="desfecho">Desfecho do atendimento</label>
+
+                    <select id="desfecho" required>
+                        <option value="alta">Alta — paciente liberado</option>
+                        <option value="internado">
+                            Internação — fica em observação
+                        </option>
+                        <option value="transferido">
+                            Transferência para outro serviço
+                        </option>
+                        <option value="evasao">
+                            Evasão — saiu sem ser atendido
+                        </option>
+                        <option value="obito">Óbito</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="obs">Observações e orientações</label>
+
+                    <textarea
+                        id="obs"
+                        placeholder="Informe as orientações para o paciente..."
+                        maxlength="2000"
+                    ></textarea>
+                </div>
+
+                <button type="submit" id="btn-consulta">
+                    Salvar consulta
+                </button>
+
+                <p id="mensagem" class="msg" role="status"></p>
+
+            </form>
+
+        </section>
+
+        <!-- PACIENTES INTERNADOS / EM OBSERVAÇÃO -->
+        <section class="card">
+
+            <div class="card-header">
+                <div>
+                    <h2>🛏️ Pacientes internados</h2>
+                    <p>Em observação — continuam no sistema até receberem alta.</p>
+                </div>
+
+                <button
+                    type="button"
+                    id="btn-atualizar-internados"
+                    class="btn-atualizar"
+                >
+                    🔄 Atualizar
+                </button>
+            </div>
+
+            <p id="internados-mensagem" class="mensagem" role="status"></p>
+
+            <div id="lista-internados"></div>
+
+        </section>
+
+    </main>
+
+    <button
+        class="btn-voltar"
+        type="button"
+        onclick="voltarPagina()"
+    >
+        ⬅️ Voltar
+    </button>
+
+    <script src="js/api.js"></script>
+
+    <script>
+        Api.proteger("medico.html");
+
+        const selectTriagem = document.getElementById("triagemId");
+        const selectMedicacao = document.getElementById("medicacao");
+
+        const lista = document.getElementById("lista-pacientes");
+        const avisoLista = document.getElementById("lista-mensagem");
+        const mensagem = document.getElementById("mensagem");
+
+        let carregandoPacientes = false;
+        let carregandoMedicacoes = false;
+        let salvandoConsulta = false;
+
+        // ==================================================
+        // COMUNICAÇÃO COM O SERVIDOR
+        // ==================================================
+
+        // Camada comum de comunicação (frontend/js/api.js): manda o token da
+        // sessão e devolve para o login quando ela expira.
+        const requisicao = Api.requisicao;
+
+        // ==================================================
+        // MENSAGENS
+        // ==================================================
+
+        function mostrarMensagem(texto, tipo = "sucesso") {
+            mensagem.textContent = texto;
+
+            mensagem.className = "msg " +
+                (tipo === "erro" ? "msg-erro" : "msg-sucesso");
+        }
+
+        // ==================================================
+        // CARREGAR PACIENTES
+        // ==================================================
+
+        async function carregarPacientes() {
+
+            if (carregandoPacientes) return;
+
+            carregandoPacientes = true;
+
+            const botao = document.getElementById("btn-atualizar");
+
+            botao.disabled = true;
+
+            avisoLista.textContent = "Carregando pacientes...";
+
+            try {
+
+                const triagens = await requisicao("/triagens");
+
+                if (!Array.isArray(triagens)) {
+                    throw new Error(
+                        "O servidor retornou uma lista de triagens inválida."
+                    );
+                }
+
+                const aguardando = triagens.filter(
+                    t => t.status === "aguardando_medico"
+                );
+
+                const pacienteSelecionado = selectTriagem.value;
+
+                lista.replaceChildren();
+                selectTriagem.replaceChildren();
+
+                const inicial = document.createElement("option");
+
+                inicial.value = "";
+                inicial.textContent = "Selecione um paciente chamado";
+
+                selectTriagem.appendChild(inicial);
+
+                if (aguardando.length === 0) {
+
+                    avisoLista.textContent =
+                        "Não há pacientes aguardando atendimento médico.";
+
+                    return;
+                }
+
+                avisoLista.textContent =
+                    aguardando.length + " paciente(s) aguardando atendimento.";
+
+                aguardando.forEach(t => {
+
+                    const cartao = document.createElement("div");
+
+                    cartao.className = "paciente";
+
+                    // NOME
+                    const titulo = document.createElement("h3");
+
+                    titulo.textContent =
+                        t.nome || t.pacienteNome || "Paciente";
+
+                    // INFORMAÇÕES DA TRIAGEM
+                    const detalhes = document.createElement("p");
+
+                    detalhes.textContent =
+                        "Risco: " + (t.risco || "Não informado") +
+                        " | Sintoma: " + (t.sintoma || "Não informado") +
+                        " | Temperatura: " +
+                        (t.temperatura ?? "Não informada") + "°C";
+
+                    // ALERGIAS
+                    const alergia = document.createElement("p");
+
+                    alergia.textContent =
+                        "Alergias: " + (t.alergia || "Não informado");
+
+                    // OBSERVAÇÕES
+                    const obs = document.createElement("p");
+
+                    obs.textContent =
+                        "Observações da triagem: " +
+                        (t.observacao || "Nenhuma");
+
+                    // BOTÃO SELECIONAR
+                    const escolher = document.createElement("button");
+
+                    escolher.type = "button";
+                    escolher.textContent = "Selecionar paciente";
+
+                    escolher.addEventListener("click", () => {
+
+                        selectTriagem.value = String(t.id);
+
+                        document.getElementById("diagnostico").focus();
+
+                        mostrarMensagem(
+                            "Paciente selecionado: " + titulo.textContent
+                        );
+
+                    });
+
+                    cartao.append(
+                        titulo,
+                        detalhes,
+                        alergia,
+                        obs,
+                        escolher
+                    );
+
+                    lista.appendChild(cartao);
+
+                    // OPÇÃO DO SELECT
+                    const opcao = document.createElement("option");
+
+                    opcao.value = t.id;
+                    opcao.textContent = titulo.textContent;
+
+                    selectTriagem.appendChild(opcao);
+
+                });
+
+                // Preservar a seleção, se o paciente continuar na fila.
+                if (
+                    [...selectTriagem.options].some(
+                        o => o.value === pacienteSelecionado
+                    )
+                ) {
+                    selectTriagem.value = pacienteSelecionado;
+                }
+
+            } catch (erro) {
+
+                avisoLista.textContent = erro.message;
+
+                lista.replaceChildren();
+
+            } finally {
+
+                carregandoPacientes = false;
+                botao.disabled = false;
+
+            }
+        }
+
+        // ==================================================
+        // CARREGAR MEDICAMENTOS DO ALMOXARIFADO
+        // ==================================================
+
+        async function carregarMedicacoes() {
+
+            if (carregandoMedicacoes) return;
+
+            carregandoMedicacoes = true;
+
+            selectMedicacao.disabled = true;
+
+            try {
+
+                const dados = await requisicao("/lista-medicacoes");
+
+                // O servidor pode retornar diretamente uma lista
+                // ou um objeto contendo a propriedade medicamentos.
+                const medicamentos = Array.isArray(dados)
+                    ? dados
+                    : dados.medicamentos;
+
+                if (!Array.isArray(medicamentos)) {
+                    throw new Error(
+                        "O servidor retornou uma lista de medicamentos inválida."
+                    );
+                }
+
+                selectMedicacao.replaceChildren();
+
+                const inicial = document.createElement("option");
+
+                inicial.value = "";
+                inicial.textContent = medicamentos.length
+                    ? "Selecione um medicamento disponível"
+                    : "Nenhum medicamento disponível no estoque";
+
+                selectMedicacao.appendChild(inicial);
+
+                medicamentos.forEach(item => {
+
+                    const nome = typeof item === "string"
+                        ? item
+                        : item.nome;
+
+                    if (!nome) return;
+
+                    const opcao = document.createElement("option");
+
+                    opcao.value = nome;
+                    opcao.textContent = nome;
+
+                    selectMedicacao.appendChild(opcao);
+
+                });
+
+                if (selectMedicacao.options.length <= 1) {
+                    selectMedicacao.disabled = true;
+                }
+
+            } catch (erro) {
+
+                selectMedicacao.replaceChildren();
+
+                const opcao = document.createElement("option");
+
+                opcao.value = "";
+                opcao.textContent = "Erro ao carregar medicamentos";
+
+                selectMedicacao.appendChild(opcao);
+
+                mostrarMensagem(erro.message, "erro");
+
+            } finally {
+
+                carregandoMedicacoes = false;
+
+                if (selectMedicacao.options.length > 1) {
+                    selectMedicacao.disabled = false;
+                }
+
+            }
+        }
+
+        // ==================================================
+        // ATUALIZAR LISTA
+        // ==================================================
+
+        document.getElementById("btn-atualizar")
+            .addEventListener("click", carregarPacientes);
+
+        // ==================================================
+        // REGISTRAR CONSULTA
+        // ==================================================
+
+        document.getElementById("form-consulta")
+            .addEventListener("submit", async function(event) {
+
+                event.preventDefault();
+
+                if (salvandoConsulta) return;
+
+                mostrarMensagem("");
+
+                const triagemId = Number(selectTriagem.value);
+
+                const diagnostico = document
+                    .getElementById("diagnostico")
+                    .value.trim();
+
+                const medicacao = selectMedicacao.value;
+
+                const obs = document
+                    .getElementById("obs")
+                    .value.trim();
+
+                if (
+                    !Number.isSafeInteger(triagemId) ||
+                    triagemId <= 0
+                ) {
+                    mostrarMensagem(
+                        "Selecione um paciente válido.",
+                        "erro"
+                    );
+                    return;
+                }
+
+                if (!diagnostico) {
+                    mostrarMensagem(
+                        "Informe o diagnóstico do paciente.",
+                        "erro"
+                    );
+                    return;
+                }
+
+                if (!medicacao) {
+                    mostrarMensagem(
+                        "Selecione uma medicação disponível no estoque.",
+                        "erro"
+                    );
+                    return;
+                }
+
+                const desfecho = document.getElementById("desfecho").value;
+
+                const dados = {
+                    triagemId,
+                    diagnostico,
+                    medicacao,
+                    obs,
+                    desfecho
+                };
+
+                const botao = document.getElementById("btn-consulta");
+
+                salvandoConsulta = true;
+                botao.disabled = true;
+                botao.textContent = "Salvando consulta...";
+
+                try {
+
+                    const resultado = await requisicao("/consulta", {
+                        metodo: "POST",
+                        dados
+                    });
+
+                    mostrarMensagem(
+                        resultado.mensagem ||
+                        "Consulta registrada com sucesso!"
+                    );
+
+                    // Limpar formulário após confirmação do servidor.
+                    this.reset();
+
+                    // Atualizar a fila de pacientes.
+                    await carregarPacientes();
+
+                    // Atualizar a lista de medicamentos e quantidades disponíveis.
+                    await carregarMedicacoes();
+
+                    // Atualizar os pacientes internados.
+                    await carregarInternados();
+
+                } catch (erro) {
+
+                    mostrarMensagem(erro.message, "erro");
+
+                } finally {
+
+                    salvandoConsulta = false;
+
+                    botao.disabled = false;
+                    botao.textContent = "Salvar consulta";
+
+                }
+
+            });
+
+        // ==================================================
+        // PACIENTES INTERNADOS (em observação)
+        // ==================================================
+
+        const listaInternados = document.getElementById("lista-internados");
+        const avisoInternados = document.getElementById("internados-mensagem");
+
+        let carregandoInternados = false;
+
+        async function carregarInternados() {
+
+            if (carregandoInternados) return;
+
+            carregandoInternados = true;
+
+            const botao = document.getElementById("btn-atualizar-internados");
+
+            botao.disabled = true;
+
+            try {
+
+                const internados = await requisicao(
+                    "/pacientes?situacao=internado"
+                );
+
+                listaInternados.replaceChildren();
+
+                if (!Array.isArray(internados) || internados.length === 0) {
+                    avisoInternados.textContent =
+                        "Nenhum paciente internado no momento.";
+                    return;
+                }
+
+                avisoInternados.textContent =
+                    internados.length + " paciente(s) em observação.";
+
+                internados.forEach(paciente => {
+
+                    const cartao = document.createElement("div");
+
+                    cartao.className = "paciente internado";
+
+                    const titulo = document.createElement("h3");
+
+                    titulo.textContent = paciente.nome;
+
+                    const situacao = document.createElement("p");
+
+                    situacao.textContent =
+                        "Situação: " + Api.situacao(paciente.status) +
+                        " desde " + Api.dataHora(paciente.statusEm);
+
+                    const acoes = document.createElement("div");
+
+                    acoes.className = "acoes-paciente";
+
+                    const alta = document.createElement("button");
+
+                    alta.type = "button";
+                    alta.className = "btn-mini alta";
+                    alta.textContent = "✅ Dar alta";
+
+                    alta.addEventListener("click", () =>
+                        registrarDesfecho(
+                            paciente,
+                            "alta",
+                            "Alta após observação",
+                            alta
+                        )
+                    );
+
+                    const obito = document.createElement("button");
+
+                    obito.type = "button";
+                    obito.className = "btn-mini perigo";
+                    obito.textContent = "Registrar óbito";
+
+                    obito.addEventListener("click", () => {
+
+                        if (!confirm(
+                            "Registrar o óbito de " + paciente.nome + "?"
+                        )) return;
+
+                        registrarDesfecho(
+                            paciente,
+                            "obito",
+                            "Óbito durante a internação",
+                            obito
+                        );
+                    });
+
+                    const transferir = document.createElement("button");
+
+                    transferir.type = "button";
+                    transferir.className = "btn-mini";
+                    transferir.textContent = "Transferir";
+
+                    transferir.addEventListener("click", () =>
+                        registrarDesfecho(
+                            paciente,
+                            "transferido",
+                            "Transferido para outro serviço",
+                            transferir
+                        )
+                    );
+
+                    acoes.append(alta, obito, transferir);
+
+                    cartao.append(titulo, situacao, acoes);
+
+                    listaInternados.appendChild(cartao);
+                });
+
+            } catch (erro) {
+
+                avisoInternados.textContent = erro.message;
+
+            } finally {
+
+                carregandoInternados = false;
+                botao.disabled = false;
+
+            }
+        }
+
+        // Registrar alta / óbito / transferência de um paciente
+        async function registrarDesfecho(paciente, desfecho, observacao, botao) {
+
+            botao.disabled = true;
+
+            try {
+
+                const resultado = await requisicao("/pacientes/desfecho", {
+                    metodo: "POST",
+                    dados: {
+                        pacienteId: paciente.id,
+                        desfecho,
+                        observacao
+                    }
+                });
+
+                mostrarMensagem(
+                    resultado.mensagem ||
+                    "Atendimento encerrado com sucesso."
+                );
+
+                await carregarInternados();
+                await carregarPacientes();
+
+            } catch (erro) {
+
+                mostrarMensagem(erro.message, "erro");
+                botao.disabled = false;
+
+            }
+        }
+
+        document.getElementById("btn-atualizar-internados")
+            .addEventListener("click", carregarInternados);
+
+        // ==================================================
+        // VOLTAR
+        // ==================================================
+
+        function voltarPagina() {
+
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                window.location.href = "index.html";
+            }
+
+        }
+
+        // ==================================================
+        // INICIALIZAÇÃO
+        // ==================================================
+
+        carregarMedicacoes();
+        carregarPacientes();
+        carregarInternados();
+
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,110 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Pro | Login</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="pagina-login">
+
+    <main class="login-container">
+        <section class="login-card">
+
+            <h1>🏥 Hospital Pro</h1>
+            <p>Cuidando da vida com excelência</p>
+
+            <form id="login-form">
+
+                <div class="form-group">
+                    <label for="usuario">Usuário</label>
+                    <input
+                        type="text"
+                        id="usuario"
+                        name="usuario"
+                        placeholder="Digite seu usuário"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="senha">Senha</label>
+                    <input
+                        type="password"
+                        id="senha"
+                        name="senha"
+                        placeholder="Digite sua senha"
+                        required
+                    >
+                </div>
+
+                <button type="submit" id="btn-login">
+                    Entrar
+                </button>
+
+                <p id="mensagem"></p>
+
+            </form>
+
+        </section>
+    </main>
+
+    <script src="js/api.js"></script>
+
+    <script>
+        const formulario = document.getElementById("login-form");
+        const mensagem = document.getElementById("mensagem");
+        const botaoLogin = document.getElementById("btn-login");
+
+        // Telas de cada setor
+        const destinoPorSetor = {
+            admin: "admin.html",
+            atendimento: "atendimento.html",
+            triagem: "triagem.html",
+            medico: "medico.html",
+            almoxarifado: "almoxarifado.html"
+        };
+
+        formulario.addEventListener("submit", async function (event) {
+            event.preventDefault();
+
+            const usuario = document.getElementById("usuario").value.trim();
+            const senha = document.getElementById("senha").value;
+
+            mensagem.textContent = "";
+            mensagem.style.color = "";
+            botaoLogin.disabled = true;
+            botaoLogin.textContent = "Entrando...";
+
+            try {
+                const dados = await Api.requisicao("/login", {
+                    metodo: "POST",
+                    dados: { usuario, senha },
+                    autenticado: false
+                });
+
+                Api.guardarSessao(dados);
+
+                const destino = destinoPorSetor[dados.tipo];
+
+                if (!destino) {
+                    throw new Error("Setor não reconhecido.");
+                }
+
+                window.location.href = destino;
+
+            } catch (erro) {
+                mensagem.textContent =
+                    erro.message || "Erro ao conectar com o servidor.";
+                mensagem.style.color = "#ff4d4d";
+
+            } finally {
+                botaoLogin.disabled = false;
+                botaoLogin.textContent = "Entrar";
+            }
+        });
+    </script>
+
+</body>
+</html>

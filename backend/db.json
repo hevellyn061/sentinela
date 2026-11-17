@@ -1,0 +1,391 @@
+{
+  "usuarios": [
+    {
+      "usuario": "triagem",
+      "tipo": "triagem",
+      "senhaSalt": "6d6dfd4d90c1369fafa31fdadd8022cc",
+      "senhaHash": "fc493ba08b666df92995e9e71ed777f297d6424d3bb8d2730a646696ccf18b7554cebcf23552964430795f76c740510f8fa9ea54b8f7db16f94710d78714e51b"
+    },
+    {
+      "usuario": "medico",
+      "tipo": "medico",
+      "senhaSalt": "04a0807aee2eaccce3c15724315c0abb",
+      "senhaHash": "cb448a49288a0d24ed2f3667253b080e8ce2fe6e41f1c2fcb7a769c1fbc50c75a7e0bd4e06dff6e14e5f39dc572a3a672d6f86224c0e095bf22e1278c83cda64"
+    },
+    {
+      "usuario": "atendimento",
+      "tipo": "atendimento",
+      "senhaSalt": "7bf06b433c3bd9563ce512e532859dd1",
+      "senhaHash": "6f76754239b2c8d080d99526a8052f84b8a5e35e2ea33486a9ebfbd367344718d78f073154033488d55b03517a086425db54b4dda1fb98decc14971f600bd2d3"
+    },
+    {
+      "usuario": "admin",
+      "tipo": "admin",
+      "senhaSalt": "12f93b66abe1dad6e4a629e749399f93",
+      "senhaHash": "324071d03ab7c59f98b1e328fc0de04754ad3ee5003b1cf8525d77efef29a427d495cebfc90a5b39cbe7d673380affd67ec75b3110468468f198b998fecf958c"
+    },
+    {
+      "usuario": "almoxarifado",
+      "tipo": "almoxarifado",
+      "senhaSalt": "b3351fa00af57305aa9d5fe727bfbc70",
+      "senhaHash": "60b7a52a8161ffccd0785acf049d9f2061eb63dedfa498426d30ddb03032b354934f3f677426986f2a069ed322af77b6264cedb53c6b21a09c4a59db9445b096"
+    }
+  ],
+  "pacientes": [
+    {
+      "id": 1776868888454,
+      "nome": "kinder ovo ",
+      "cpf": "6546468844",
+      "tipo": "Particular",
+      "status": "triagem",
+      "createdAt": "2026-04-22T14:41:28.454Z",
+      "cpfInvalido": true
+    },
+    {
+      "id": 1776871886695,
+      "nome": "enzo",
+      "cpf": "545343554",
+      "tipo": "Particular",
+      "status": "triagem",
+      "createdAt": "2026-04-22T15:31:26.695Z",
+      "cpfInvalido": true
+    },
+    {
+      "id": 1778767273416,
+      "nome": "yan",
+      "cpf": "534344499449",
+      "tipo": "Particular",
+      "status": "triagem",
+      "createdAt": "2026-05-14T14:01:13.416Z",
+      "cpfInvalido": true
+    },
+    {
+      "id": 1778843781579,
+      "nome": "adriana",
+      "cpf": "45455435",
+      "tipo": "Particular",
+      "status": "triagem",
+      "createdAt": "2026-05-15T11:16:21.579Z",
+      "cpfInvalido": true
+    },
+    {
+      "id": 1792667851015,
+      "nome": "hevellyn",
+      "cpf": "123456789",
+      "tipo": "Particular",
+      "status": "triagem",
+      "createdAt": "2026-10-22T11:17:31.015Z",
+      "cpfInvalido": true
+    },
+    {
+      "id": 1792669958728,
+      "nome": "hevellyn",
+      "cpf": "123456789",
+      "tipo": "Particular",
+      "status": "triagem",
+      "createdAt": "2026-10-22T11:52:38.728Z",
+      "cpfInvalido": true
+    },
+    {
+      "id": 1792671331582,
+      "nome": "Ana Paula Nunes Marques",
+      "cpf": "12345678998765",
+      "tipo": "Convenio",
+      "status": "alta",
+      "createdAt": "2026-10-22T12:15:31.582Z",
+      "cpfInvalido": true,
+      "statusEm": "2026-11-12T15:41:57.195Z",
+      "desfecho": "alta",
+      "saidaEm": "2026-11-12T15:41:57.195Z",
+      "atendimentoId": null
+    },
+    {
+      "id": 1792671718960,
+      "nome": "byanca",
+      "cpf": "1234567898765432",
+      "tipo": "Particular",
+      "status": "alta",
+      "createdAt": "2026-10-22T12:21:58.960Z",
+      "cpfInvalido": true,
+      "statusEm": "2026-11-12T15:41:54.219Z",
+      "desfecho": "alta",
+      "saidaEm": "2026-11-12T15:41:54.218Z",
+      "atendimentoId": null
+    },
+    {
+      "id": 1792672174350,
+      "nome": "ana paula da silva cunha",
+      "cpf": "123445665343",
+      "tipo": "Convenio",
+      "status": "internado",
+      "createdAt": "2026-10-22T12:29:34.350Z",
+      "cpfInvalido": true,
+      "statusEm": "2026-11-12T15:43:15.996Z",
+      "desfecho": "alta",
+      "saidaEm": "2026-11-12T15:41:51.349Z",
+      "atendimentoId": null,
+      "internadoEm": "2026-11-12T15:43:15.996Z"
+    }
+  ],
+  "triagens": [
+    {
+      "id": 1792668552385,
+      "nome": "ana",
+      "sintoma": "hemorragia",
+      "temperatura": 42,
+      "alergia": "a dipirona",
+      "observacao": "",
+      "risco": "vermelho",
+      "status": "atendida",
+      "createdAt": "2026-10-22T11:29:12.385Z"
+    },
+    {
+      "id": 1792668914736,
+      "nome": "yan",
+      "sintoma": "hemorragia",
+      "temperatura": 44,
+      "alergia": "todas",
+      "observacao": "vai morrer",
+      "risco": "vermelho",
+      "status": "atendida",
+      "createdAt": "2026-10-22T11:35:14.736Z"
+    },
+    {
+      "id": 1792671426096,
+      "pacienteId": 1792671331582,
+      "nome": "Ana Paula Nunes Marques",
+      "sintoma": "falta_ar_moderada",
+      "temperatura": 39,
+      "alergia": "Nenhuma",
+      "observacao": "a paciente esta se sentindo muito mal a 5 dias",
+      "risco": "vermelho",
+      "status": "atendida",
+      "createdAt": "2026-10-22T12:17:06.096Z"
+    },
+    {
+      "id": 1792671944294,
+      "pacienteId": 1792671718960,
+      "nome": "byanca",
+      "sintoma": "falta_ar_moderada",
+      "temperatura": 39,
+      "alergia": "paracetamol",
+      "observacao": "",
+      "risco": "vermelho",
+      "status": "atendida",
+      "createdAt": "2026-10-22T12:25:44.294Z"
+    },
+    {
+      "id": 1792672207743,
+      "pacienteId": 1792672174350,
+      "nome": "ana paula da silva cunha",
+      "sintoma": "diarreia",
+      "temperatura": 36,
+      "alergia": "meninos",
+      "observacao": "",
+      "risco": "amarelo",
+      "status": "internado",
+      "createdAt": "2026-10-22T12:30:07.743Z"
+    }
+  ],
+  "consultas": [
+    {
+      "id": 1792672013511,
+      "triagemId": 1792671426096,
+      "paciente": "Ana Paula Nunes Marques",
+      "diagnostico": "esta com dengue",
+      "medicacao": "Dipirona",
+      "obs": "",
+      "createdAt": "2026-10-22T12:26:53.511Z"
+    },
+    {
+      "id": 1792672263774,
+      "triagemId": 1792671944294,
+      "paciente": "byanca",
+      "diagnostico": "gripe",
+      "medicacao": "Dipirona",
+      "obs": "",
+      "createdAt": "2026-10-22T12:31:03.774Z"
+    },
+    {
+      "id": 1794481925226,
+      "triagemId": 1792668914736,
+      "paciente": "yan",
+      "diagnostico": "cwcd",
+      "medicacao": "Dipirona",
+      "obs": "",
+      "createdAt": "2026-11-12T11:12:05.226Z"
+    },
+    {
+      "id": 1794486552241,
+      "triagemId": 1792668552385,
+      "paciente": "ana",
+      "diagnostico": "defefv",
+      "medicacao": "Azitromicina",
+      "obs": "",
+      "createdAt": "2026-11-12T12:29:12.241Z"
+    },
+    {
+      "id": 1794498195996,
+      "triagemId": 1792672207743,
+      "paciente": "ana paula da silva cunha",
+      "diagnostico": "febre amarela",
+      "medicacao": "dipirona",
+      "medicacaoId": 1794497186325,
+      "obs": "",
+      "medico": "medico",
+      "createdAt": "2026-11-12T15:43:15.996Z"
+    }
+  ],
+  "atendimentos": [
+    {
+      "id": 1794498117195,
+      "pacienteId": 1792671331582,
+      "nome": "Ana Paula Nunes Marques",
+      "cpf": "12345678998765",
+      "tipo": "Convenio",
+      "triagemId": 1792671426096,
+      "risco": "vermelho",
+      "sintoma": "falta_ar_moderada",
+      "diagnostico": "",
+      "medicacao": "",
+      "obs": "Alta registrada pela recepção",
+      "medico": null,
+      "desfecho": "alta",
+      "desfechoRotulo": "Alta",
+      "resumo": "Alta médica — paciente liberado.",
+      "entradaEm": "2026-10-22T12:15:31.582Z",
+      "saidaEm": "2026-11-12T15:41:57.195Z",
+      "registradoPor": "atendimento"
+    },
+    {
+      "id": 1794498114219,
+      "pacienteId": 1792671718960,
+      "nome": "byanca",
+      "cpf": "1234567898765432",
+      "tipo": "Particular",
+      "triagemId": 1792671944294,
+      "risco": "vermelho",
+      "sintoma": "falta_ar_moderada",
+      "diagnostico": "",
+      "medicacao": "",
+      "obs": "Alta registrada pela recepção",
+      "medico": null,
+      "desfecho": "alta",
+      "desfechoRotulo": "Alta",
+      "resumo": "Alta médica — paciente liberado.",
+      "entradaEm": "2026-10-22T12:21:58.960Z",
+      "saidaEm": "2026-11-12T15:41:54.218Z",
+      "registradoPor": "atendimento"
+    },
+    {
+      "id": 1794498111349,
+      "pacienteId": 1792672174350,
+      "nome": "ana paula da silva cunha",
+      "cpf": "123445665343",
+      "tipo": "Convenio",
+      "triagemId": 1792672207743,
+      "risco": "amarelo",
+      "sintoma": "diarreia",
+      "diagnostico": "",
+      "medicacao": "",
+      "obs": "Alta registrada pela recepção",
+      "medico": null,
+      "desfecho": "alta",
+      "desfechoRotulo": "Alta",
+      "resumo": "Alta médica — paciente liberado.",
+      "entradaEm": "2026-10-22T12:29:34.350Z",
+      "saidaEm": "2026-11-12T15:41:51.349Z",
+      "registradoPor": "atendimento"
+    }
+  ],
+  "chamadasTv": [
+    {
+      "id": 1794486513610,
+      "triagemId": 1792672207743,
+      "paciente": "ana paula da silva cunha",
+      "localTipo": "SALA MÉDICA",
+      "localNumero": "1",
+      "status": "atendida",
+      "createdAt": "2026-11-12T12:28:33.610Z",
+      "atendidaEm": "2026-11-12T15:43:15.996Z"
+    },
+    {
+      "id": 1792672209519,
+      "triagemId": 1792671944294,
+      "paciente": "byanca",
+      "localTipo": "SALA MÉDICA",
+      "localNumero": "1",
+      "status": "atendida",
+      "createdAt": "2026-10-22T12:30:09.519Z"
+    },
+    {
+      "id": 1792671945824,
+      "triagemId": 1792671426096,
+      "paciente": "Ana Paula Nunes Marques",
+      "localTipo": "SALA MÉDICA",
+      "localNumero": "1",
+      "status": "atendida",
+      "createdAt": "2026-10-22T12:25:45.824Z"
+    }
+  ],
+  "estoque": [
+    {
+      "id": 1794497186325,
+      "nome": "dipirona",
+      "quantidade": 27,
+      "unidade": "comprimidos",
+      "categoria": "Antiemético",
+      "createdAt": "2026-11-12T15:26:26.325Z"
+    },
+    {
+      "id": 1794843017716,
+      "nome": "Paracetamol",
+      "quantidade": 20,
+      "unidade": "comprimidos",
+      "categoria": "Analgésico/Antipirético",
+      "createdAt": "2026-11-16T15:30:17.716Z"
+    }
+  ],
+  "historicoEntradas": [
+    {
+      "id": 1794843029293,
+      "medicamentoId": 1794843017716,
+      "nome": "Paracetamol",
+      "quantidade": 10,
+      "unidade": "comprimidos",
+      "tipo": "Reposição",
+      "obs": "",
+      "data": "2026-11-16T15:30:29.293Z"
+    },
+    {
+      "id": 1794843017716,
+      "medicamentoId": 1794843017716,
+      "nome": "Paracetamol",
+      "quantidade": 10,
+      "unidade": "comprimidos",
+      "tipo": "Novo cadastro",
+      "obs": "",
+      "data": "2026-11-16T15:30:17.716Z"
+    },
+    {
+      "id": 1794843010397,
+      "medicamentoId": 1794497186325,
+      "nome": "dipirona",
+      "quantidade": 10,
+      "unidade": "comprimidos",
+      "tipo": "Reposição",
+      "obs": "",
+      "data": "2026-11-16T15:30:10.397Z"
+    },
+    {
+      "id": 1794497186325,
+      "medicamentoId": 1794497186325,
+      "nome": "dipirona",
+      "quantidade": 18,
+      "unidade": "comprimidos",
+      "tipo": "Novo cadastro",
+      "obs": "",
+      "data": "2026-11-12T15:26:26.325Z"
+    }
+  ]
+}
